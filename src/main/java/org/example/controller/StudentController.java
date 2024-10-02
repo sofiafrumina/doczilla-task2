@@ -15,20 +15,21 @@ import java.util.List;
 @RequestMapping("/students")
 public class StudentController {
     private final StudentService studentService;
-
+    @CrossOrigin(origins = "http://localhost:63342")
     @GetMapping
     public ResponseEntity<List<Student>> showStudent() {
         List<Student> students = studentService.showStudent();
 
         return ResponseEntity.ok(students);
     }
+    @CrossOrigin(origins = "http://localhost:63342")
     @PostMapping
     public ResponseEntity<String> createStudent(@RequestBody StudentRequestDto studentRequestDto){
         studentService.createStudent(studentRequestDto);
 
         return ResponseEntity.ok("Студент успешно создан");
     }
-
+    @CrossOrigin(origins = "http://localhost:63342")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudentById(@PathVariable Long id){
         studentService.deleteStudentById(id);

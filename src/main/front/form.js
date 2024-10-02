@@ -1,75 +1,71 @@
-$(document).ready(function() {
+$(document).ready(function () {
     const apiUrl = 'http://localhost:8080/students';
 
-    // Функция для получения списка студентов
+    // Функция для получения и отображения списка студентов
     function fetchStudents() {
-        $.ajax({
-            url: apiUrl,
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                const tbody = $('#students-body');
-                $.each(data, function(index, student) {
-                    const row = $('<tr>');
-                    row.append($('<td>').text(student.id));
-                    row.append($('<td>').text(student.name));
-                    row.append($('<td>').text(student.surname));
-                    row.append($('<td>').text(student.patronymic));
-                    row.append($('<td>').text(student.birthdate));
-                    row.append($('<td>').text(student.group_name));
-                    tbody.append(row);
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error fetching students:', textStatus, errorThrown);
-            }
+        $.get(apiUrl, function (students) {
+            const tableBody = $('#studentsTableBody');
+            tableBody.empty();
+
+            students.forEach(student => {
+                const row = `
+                    <tr>
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.surname}</td>
+                        <td>${student.patronymic}</td>
+                        <td>${student.birthdate}</td>
+                        <td>${student.group_name}</td>
+                        <td><button class="delete-btn" data-id="${student.id}">Delete</button></td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
         });
     }
 
-    // Функция для добавления студента
-    $('#add-student-form').on('submit', function(e) {
-        e.preventDefault(); // Остановить стандартное поведение формы
-        const student = {
-            first_name: $('#name').val(),
-            last_name: $('#surname').val(),
+    // Функция для создания студента
+    $('#createStudentBtn').click(function () {
+        const newStudent = {
+            name: $('#name').val(),
+            surname: $('#surname').val(),
             patronymic: $('#patronymic').val(),
-            birth_date: $('#birthdate').val(),
-            group: $('#group_name').val()
+            birthdate: $('#birthdate').val(),
+            group_name: $('#group_name').val()
         };
 
         $.ajax({
             url: apiUrl,
             type: 'POST',
-            contentType: 'application/x-www-form-urlencoded',
-            data: student,
-            success: function() {
-                fetchStudents(); // Обновляем список студентов
-                $('#add-student-form')[0].reset(); // Очищаем форму
+            contentType: 'application/json',
+            data: JSON.stringify(newStudent),
+            success: function () {
+                fetchStudents();  // Обновляем список студентов
+                alert('Student created successfully');
             },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error adding student:', textStatus, errorThrown);
+            error: function () {
+                alert('Error creating student');
             }
         });
     });
 
     // Функция для удаления студента
-    $('#delete-student-form').on('submit', function(e) {
-        e.preventDefault(); // Остановить стандартное поведение формы
-        const id = $('#deleteStudent').val();
+    $(document).on('click', '.delete-btn', function () {
+        const studentId = $(this).data('id');
 
         $.ajax({
-            url: `${apiUrl}?id=${uniqueNumber}`,
+            url: `${apiUrl}/${studentId}`,
             type: 'DELETE',
-            success: function() {
-                fetchStudents();
-                $('#delete-student-form')[0].reset();
+            success: function () {
+                fetchStudents();  // Обновляем список студентов
+                alert('Student deleted successfully');
             },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error deleting student:', textStatus, errorThrown);
+            error: function () {
+                alert('Error deleting student');
             }
         });
     });
 
-    // Загружаем студентов при загрузке страницы
+    // Инициализация: получение списка студентов при загрузке страницы
     fetchStudents();
 });
